@@ -1,4 +1,5 @@
 exports_files([
+    "go_pkg_config_repo.bzl",
     "pkg_config_repo.bzl",
     "system_library.bzl",
 ])
