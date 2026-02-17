@@ -1,0 +1,45 @@
+load("@gazelle//:def.bzl", "gazelle")
+load("@rules_cc//cc:defs.bzl", "cc_library")
+load("@rules_go//go:def.bzl", "go_binary", "go_library")
+
+genrule(
+    name = "libwebp_linkname",
+    srcs = ["@libwebp//:libwebp"],
+    outs = ["libwebp.a"],
+    cmd = "for f in $(locations @libwebp//:libwebp); do case \"$$f\" in *.a) cp \"$$f\" $@; exit 0;; esac; done; echo 'libwebp static archive not found' >&2; exit 1",
+)
+
+cc_library(
+    name = "webp_linkname",
+    srcs = [":libwebp.a"],
+    linkopts = ["-L$(GENDIR)"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "webp",
+    deps = [
+        ":webp_linkname",
+        "@libwebp//:libwebp",
+    ],
+    visibility = ["//visibility:public"],
+)
+
+go_binary(
+    name = "main",
+    embed = [":go_webp_lib"],
+    visibility = ["//visibility:public"],
+)
+
+gazelle(name = "gazelle")
+
+go_library(
+    name = "go_webp_lib",
+    srcs = ["main.go"],
+    importpath = "example.com/go_webp",
+    visibility = ["//visibility:private"],
+    deps = [
+        "@com_github_kolesa_team_go_webp//encoder:encoder",
+        "@com_github_kolesa_team_go_webp//webp:webp",
+    ],
+)

@@ -115,6 +115,7 @@ Then map different upstream modules to different wrappers, for example
 ## Example
 
 - Go GTK4 sample: `examples/go_gtk4`
+- Go WebP sample (Bazel-built libwebp): `examples/go_webp`
 - Basic C sample: `examples/basic`
 
 ## Troubleshooting
