@@ -21,7 +21,7 @@ sys_libs.lib(name = "glib", pkg = "glib-2.0")
 # Create repo @gtk4 from host pkg-config package gtk4.
 sys_libs.lib(name = "gtk4", pkg = "gtk4")
 # Define a Go cgo profile named "gtk4" that injects glib and gtk4 C deps.
-sys_libs.go_profile(name = "gtk4", libs = ["glib", "gtk4"])
+sys_libs.go_profile(name = "gtk4", libs = ["@glib//:glib", "@gtk4//:gtk4"])
 # Make generated repos visible to this root module.
 use_repo(sys_libs, "glib", "gtk4", "pkg_config_go")
 

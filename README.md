@@ -9,7 +9,8 @@ packages into Bazel repos/targets you can depend on from C/C++ and Go (cgo).
   `@<name>//:<name>` that exports include paths/defines/link flags.
 - `pkg_config_ext.go_profile(name, libs)`: creates Go wrapper macros in
   `@pkg_config_go//:defs.bzl`, such as `go_library_<name>`, that auto-inject
-  `cdeps` for cgo targets.
+  `cdeps` for cgo targets. `libs` can be full labels (recommended), or
+  shorthand names from `lib(name = ...)`.
 
 ## Prerequisites
 
@@ -62,7 +63,7 @@ bazel_dep(name = "gazelle", version = "0.46.0")
 sys_libs = use_extension("@bazel_pkg_config//extensions:extensions.bzl", "pkg_config_ext")
 sys_libs.lib(name = "glib", pkg = "glib-2.0")
 sys_libs.lib(name = "gtk4", pkg = "gtk4")
-sys_libs.go_profile(name = "gtk4", libs = ["glib", "gtk4"])
+sys_libs.go_profile(name = "gtk4", libs = ["@glib//:glib", "@gtk4//:gtk4"])
 use_repo(sys_libs, "glib", "gtk4", "pkg_config_go")
 
 go_sdk = use_extension("@rules_go//go:extensions.bzl", "go_sdk")
@@ -101,9 +102,12 @@ generated cgo packages can find headers like `glib.h`.
 You can define multiple independent cdep sets:
 
 ```starlark
-sys_libs.go_profile(name = "gtk4", libs = ["glib", "gtk4"])
-sys_libs.go_profile(name = "adwaita", libs = ["glib", "gtk4", "libadwaita"])
+sys_libs.go_profile(name = "gtk4", libs = ["@glib//:glib", "@gtk4//:gtk4"])
+sys_libs.go_profile(name = "adwaita", libs = ["@glib//:glib", "@gtk4//:gtk4", "@libadwaita//:libadwaita"])
 ```
+
+You can also point at regular `cc_library` targets, not only pkg-config repos,
+for example `"//third_party/gtk_shim:gtk_shim"`.
 
 Then map different upstream modules to different wrappers, for example
 `go_library_gtk4` vs `go_library_adwaita`.
