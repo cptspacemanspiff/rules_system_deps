@@ -1,0 +1,7 @@
+# Bazel output/symlink directories
+/bazel-*
+**/bazel-*
+
+# Bazel module lockfiles generated in local development
+/MODULE.bazel.lock
+/examples/**/MODULE.bazel.lock

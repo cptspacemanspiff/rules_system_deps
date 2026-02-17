@@ -1,0 +1,16 @@
+bazel_dep(name = "bazel_pkg_config", version = "0.0.1")
+local_path_override(
+    module_name = "bazel_pkg_config",
+    path = "../..",
+)
+
+bazel_dep(name = "rules_cc", version = "0.2.14")
+
+sys_libs = use_extension("@bazel_pkg_config//extensions:extensions.bzl", "pkg_config_ext")
+
+sys_libs.lib(
+    name = "pci",
+    pkg = "libpci",
+)
+
+use_repo(sys_libs, "pci")
