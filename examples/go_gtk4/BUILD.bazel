@@ -1,12 +1,18 @@
 load("@gazelle//:def.bzl", "gazelle")
-load("@rules_go//go:def.bzl", "go_binary")
+load("@rules_go//go:def.bzl", "go_binary", "go_library")
 
 go_binary(
     name = "main",
-    srcs = ["main.go"],
-    cgo = True,
+    embed = [":go_gtk4_lib"],
     visibility = ["//visibility:public"],
-    deps = ["@com_github_diamondburned_gotk4_pkg//gtk/v4:go_default_library"],
 )
 
 gazelle(name = "gazelle")
+
+go_library(
+    name = "go_gtk4_lib",
+    srcs = ["main.go"],
+    importpath = "example.com/go_gtk4",
+    visibility = ["//visibility:private"],
+    deps = ["@com_github_diamondburned_gotk4_pkg//gtk/v4:gtk"],
+)
