@@ -1,5 +1,5 @@
 module(
-    name = "bazel_pkg_config",
+    name = "rules_system_deps",
     version = "0.0.1",
 )
 

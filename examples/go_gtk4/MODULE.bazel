@@ -1,11 +1,11 @@
 # This module is the root Bazel module for the example project.
 module(name = "go_gtk4_example")
 
-# Depend on the local bazel_pkg_config module.
-bazel_dep(name = "bazel_pkg_config", version = "0.0.1")
+# Depend on the local rules_system_deps module.
+bazel_dep(name = "rules_system_deps", version = "0.0.1")
 # During local development, use the checkout two directories up instead of a registry release.
 local_path_override(
-    module_name = "bazel_pkg_config",
+    module_name = "rules_system_deps",
     path = "../..",
 )
 
@@ -14,8 +14,8 @@ bazel_dep(name = "rules_cc", version = "0.2.14")
 bazel_dep(name = "rules_go", version = "0.60.0")
 bazel_dep(name = "gazelle", version = "0.46.0")
 
-# Load bazel_pkg_config's module extension that creates repos from pkg-config packages.
-sys_libs = use_extension("@bazel_pkg_config//extensions:extensions.bzl", "pkg_config_ext")
+# Load rules_system_deps's module extension that creates repos from pkg-config packages.
+sys_libs = use_extension("@rules_system_deps//extensions:extensions.bzl", "pkg_config_ext")
 # Create repo @glib from host pkg-config package glib-2.0.
 sys_libs.lib(name = "glib", pkg = "glib-2.0")
 # Create repo @gtk4 from host pkg-config package gtk4.

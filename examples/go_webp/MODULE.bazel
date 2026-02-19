@@ -1,8 +1,8 @@
 module(name = "go_webp_example")
 
-bazel_dep(name = "bazel_pkg_config", version = "0.0.1")
+bazel_dep(name = "rules_system_deps", version = "0.0.1")
 local_path_override(
-    module_name = "bazel_pkg_config",
+    module_name = "rules_system_deps",
     path = "../..",
 )
 
@@ -11,7 +11,7 @@ bazel_dep(name = "rules_go", version = "0.60.0")
 bazel_dep(name = "gazelle", version = "0.46.0")
 bazel_dep(name = "libwebp", version = "1.6.0")
 
-sys_libs = use_extension("@bazel_pkg_config//extensions:extensions.bzl", "pkg_config_ext")
+sys_libs = use_extension("@rules_system_deps//extensions:extensions.bzl", "pkg_config_ext")
 inject_repo(sys_libs, "go_webp_example")
 sys_libs.go_profile(name = "webp", libs = ["@go_webp_example//:webp"])
 use_repo(sys_libs, "pkg_config_go")

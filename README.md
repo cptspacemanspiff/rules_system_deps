@@ -1,6 +1,6 @@
-# bazel_pkg_config
+# rules_system_deps
 
-`bazel_pkg_config` is a small Bzlmod extension that turns host `pkg-config`
+`rules_system_deps` is a small Bzlmod extension that turns host `pkg-config`
 packages into Bazel repos/targets you can depend on from C/C++ and Go (cgo).
 
 ## What it provides
@@ -25,10 +25,10 @@ packages into Bazel repos/targets you can depend on from C/C++ and Go (cgo).
 ```starlark
 module(name = "my_project")
 
-bazel_dep(name = "bazel_pkg_config", version = "0.0.1")
+bazel_dep(name = "rules_system_deps", version = "0.0.1")
 bazel_dep(name = "rules_cc", version = "0.2.14")
 
-sys_libs = use_extension("@bazel_pkg_config//extensions:extensions.bzl", "pkg_config_ext")
+sys_libs = use_extension("@rules_system_deps//extensions:extensions.bzl", "pkg_config_ext")
 sys_libs.lib(name = "pci", pkg = "libpci")
 use_repo(sys_libs, "pci")
 ```
@@ -55,12 +55,12 @@ macro implementation comes from generated repo `@pkg_config_go`.
 ```starlark
 module(name = "my_go_project")
 
-bazel_dep(name = "bazel_pkg_config", version = "0.0.1")
+bazel_dep(name = "rules_system_deps", version = "0.0.1")
 bazel_dep(name = "rules_cc", version = "0.2.14")
 bazel_dep(name = "rules_go", version = "0.60.0")
 bazel_dep(name = "gazelle", version = "0.46.0")
 
-sys_libs = use_extension("@bazel_pkg_config//extensions:extensions.bzl", "pkg_config_ext")
+sys_libs = use_extension("@rules_system_deps//extensions:extensions.bzl", "pkg_config_ext")
 sys_libs.lib(name = "glib", pkg = "glib-2.0")
 sys_libs.lib(name = "gtk4", pkg = "gtk4")
 sys_libs.go_profile(name = "gtk4", libs = ["@glib//:glib", "@gtk4//:gtk4"])
