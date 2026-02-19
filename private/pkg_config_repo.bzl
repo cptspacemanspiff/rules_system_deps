@@ -6,14 +6,51 @@ def _parse_flags(flags_str, prefix):
 
 def _pkg_config_impl(rctx):
     pkg = rctx.attr.pkg
+
+    # Check that pkg-config is available before trying to use it.
+    which = rctx.execute(["which", "pkg-config"])
+    if which.return_code != 0:
+        fail(
+            "\n\nERROR: pkg-config is not installed or not on PATH.\n" +
+            "  Required to resolve system dependency: '{}'\n".format(pkg) +
+            "  Install it with your system package manager, e.g.:\n" +
+            "    Fedora/RHEL:  sudo dnf install pkgconf-pkg-config\n" +
+            "    Debian/Ubuntu: sudo apt install pkg-config\n" +
+            "    macOS:        brew install pkg-config\n",
+        )
+
+    # Check the package exists before querying flags, to give a clear error.
+    exists = rctx.execute(["pkg-config", "--exists", pkg])
+    if exists.return_code != 0:
+        # Collect the list of known packages to help the user find the right name.
+        known = rctx.execute(["pkg-config", "--list-all"])
+        hint = ""
+        if known.return_code == 0:
+            # Look for packages whose name contains any word from pkg.
+            candidates = []
+            pkg_words = pkg.replace("-", " ").replace("_", " ").lower().split()
+            for line in known.stdout.splitlines():
+                name = line.split(" ")[0].lower()
+                if any([w in name for w in pkg_words]):
+                    candidates.append(line.split(" ")[0])
+            if candidates:
+                hint = "\n  Similar packages found:\n" + "\n".join(["    " + c for c in candidates[:8]])
+        fail(
+            "\n\nERROR: pkg-config package '{}' not found on this system.\n".format(pkg) +
+            "  Install the development package, e.g.:\n" +
+            "    Fedora/RHEL:  sudo dnf install {}-devel\n".format(pkg) +
+            "    Debian/Ubuntu: sudo apt install lib{}-dev\n".format(pkg) +
+            hint + "\n",
+        )
+
     result = rctx.execute(["pkg-config", "--cflags", pkg])
     if result.return_code != 0:
-        fail("pkg-config --cflags {} failed: {}".format(pkg, result.stderr))
+        fail("\n\nERROR: pkg-config --cflags '{}' failed:\n  {}\n".format(pkg, result.stderr.strip()))
     cflags = result.stdout.strip()
 
     result = rctx.execute(["pkg-config", "--libs", pkg])
     if result.return_code != 0:
-        fail("pkg-config --libs {} failed: {}".format(pkg, result.stderr))
+        fail("\n\nERROR: pkg-config --libs '{}' failed:\n  {}\n".format(pkg, result.stderr.strip()))
     libs = result.stdout.strip()
 
     includes = _parse_flags(cflags, "-I")

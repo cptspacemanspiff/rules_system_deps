@@ -3,9 +3,23 @@
 def _parse_spec(spec):
     parts = spec.split("|", 1)
     if len(parts) != 2:
-        fail("invalid go profile spec '{}': expected '<profile>|<dep1,dep2,...>'".format(spec))
+        fail(
+            "\n\nERROR: Invalid go_profile spec: '{}'\n".format(spec) +
+            "  Expected format: '<profile_name>|<dep1>,<dep2>,...'\n" +
+            "  Example: 'gtk4|@@glib//:glib,@@gtk4//:gtk4'\n",
+        )
     profile = parts[0]
+    if not profile:
+        fail(
+            "\n\nERROR: go_profile spec has an empty profile name: '{}'\n".format(spec) +
+            "  The profile name is the part before the '|'.\n",
+        )
     deps = [dep for dep in parts[1].split(",") if dep]
+    if not deps:
+        fail(
+            "\n\nERROR: go_profile '{}' has no dependencies listed after the '|'.\n".format(profile) +
+            "  Specify at least one dep, e.g.: sys_libs.go_profile(name='{}', libs=['@@somerepo//:sometarget'])\n".format(profile),
+        )
     return profile, deps
 
 def _go_pkg_config_impl(rctx):
@@ -15,7 +29,10 @@ def _go_pkg_config_impl(rctx):
     for spec in rctx.attr.profile_specs:
         profile, deps = _parse_spec(spec)
         if profile in profile_deps:
-            fail("duplicate go profile '{}'".format(profile))
+            fail(
+                "\n\nERROR: Duplicate go_profile name: '{}'\n".format(profile) +
+                "  Each go_profile must have a unique name.\n",
+            )
         profile_deps[profile] = deps
         for dep in deps:
             if dep not in all_deps:
