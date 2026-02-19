@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  examples:
+    name: Build examples
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        example:
+          - basic
+          - go_gtk4
+          - go_webp
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build ${{ matrix.example }} example
+        uses: devcontainers/ci@v0.3
+        with:
+          runCmd: cd examples/${{ matrix.example }} && bazel build //...
+          push: never
