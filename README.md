@@ -97,6 +97,35 @@ Gazelle normally generates `go_library(...)` for upstream Go packages.
 That wrapper adds GTK/glib `cdeps` automatically when `cgo = True`, so
 generated cgo packages can find headers like `glib.h`.
 
+## Using `inject_repo` with Bazel-built libraries
+
+`inject_repo` is a Bzlmod built-in that makes a repo—one that a module extension does not own—visible to that extension. You need it when a `go_profile` dep lives in the root module (or another module), rather than in a `lib()`-generated repo.
+
+### When you need it
+
+`go_profile(libs = [...])` accepts any Bazel label, including targets from repos that `rules_system_deps` did not create. If such a repo is owned by a different extension (or by the root module itself), the `pkg_config_ext` extension cannot see it unless you call `inject_repo`.
+
+Common cases:
+- The library was built by Bazel (e.g. `bazel_dep(name = "libwebp")`) rather than discovered via `pkg-config`.
+- The library target lives in the root module's own `BUILD.bazel`.
+
+### Worked example: Bazel-built libwebp
+
+In `examples/go_webp/MODULE.bazel`, `libwebp` is a Bazel-built dep, not a system package. Its `cc_library` target is `@go_webp_example//:webp` (defined in the root module). To use it in a `go_profile`, the root module injects itself into `sys_libs`:
+
+```starlark
+bazel_dep(name = "libwebp", version = "1.6.0")
+
+sys_libs = use_extension("@rules_system_deps//extensions:extensions.bzl", "pkg_config_ext")
+inject_repo(sys_libs, "go_webp_example")          # expose root module's repo to the extension
+sys_libs.go_profile(name = "webp", libs = ["@go_webp_example//:webp"])
+use_repo(sys_libs, "pkg_config_go")
+```
+
+Without `inject_repo(sys_libs, "go_webp_example")`, the extension would fail because `@go_webp_example` is outside its visibility.
+
+The second `inject_repo` in the same file makes `@pkg_config_go` visible to the `go_deps` extension (so Gazelle's `map_kind` can find `@pkg_config_go//:defs.bzl`). That is the same pattern shown in the GTK4 example above.
+
 ## Multiple Go profiles
 
 You can define multiple independent cdep sets:
